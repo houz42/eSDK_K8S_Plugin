@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"net"
@@ -16,10 +15,11 @@ import (
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
-	configFile        = "/etc/huawei/csi.json"
+	configFile        = "/etc/huawei/csi.yaml"
 	controllerLogFile = "huawei-csi-controller"
 	nodeLogFile       = "huawei-csi-node"
 	csiLogFile        = "huawei-csi"
@@ -52,10 +52,11 @@ var (
 )
 
 type CSIConfig struct {
-	Backends []map[string]interface{} `json:"backends"`
+	Backends []map[string]interface{} `json:"backends" yaml:"backends"`
 }
 
 func init() {
+	logrus.Info("initializing huawei csi plugin")
 	_ = flag.Set("log_dir", "/var/log/huawei")
 	flag.Parse()
 
@@ -64,7 +65,7 @@ func init() {
 		logrus.Fatalf("Read config file %s error: %v", configFile, err)
 	}
 
-	err = json.Unmarshal(data, &config)
+	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		logrus.Fatalf("Unmarshal config file %s error: %v", configFile, err)
 	}
